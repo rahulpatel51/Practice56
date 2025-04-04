@@ -162,12 +162,6 @@ export function Sidebar() {
               label="Settings"
               isActive={isActive("/dashboard/settings")}
             />
-            <NavItem
-              href="/dashboard/help"
-              icon={<HelpCircle size={16} />}
-              label="Help & Support"
-              isActive={isActive("/dashboard/help")}
-            />
           </nav>
         </div>
       </div>
