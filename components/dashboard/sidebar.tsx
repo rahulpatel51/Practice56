@@ -107,12 +107,6 @@ export function Sidebar() {
               label="Products"
               isActive={isActive("/dashboard/products")}
             />
-            <NavItem
-              href="/dashboard/cart"
-              icon={<ShoppingBag size={16} />}
-              label="Cart"
-              isActive={isActive("/dashboard/cart")}
-            />
           </nav>
         </div>
 
