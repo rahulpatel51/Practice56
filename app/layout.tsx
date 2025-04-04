@@ -8,7 +8,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "AdminHub - E-Commerce Dashboard",
   description: "Manage your e-commerce business efficiently",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
