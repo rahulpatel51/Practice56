@@ -7,24 +7,27 @@ import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner" // Assuming you're using Sonner for toast notifications
+
 
 export function SignupForm() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required"
+    if (!formData.name.trim()) {
+      newErrors.name = "Full name is required"
     }
     
     if (!formData.email.includes("@")) {
@@ -37,6 +40,10 @@ export function SignupForm() {
     
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match"
+    }
+    
+    if (!termsAccepted) {
+      newErrors.terms = "You must accept the terms and conditions"
     }
     
     setErrors(newErrors)
@@ -60,11 +67,44 @@ export function SignupForm() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Signup failed:", error)
+      // const response = await signup({
+      //   name: formData.name,
+      //   email: formData.email,
+      //   password: formData.password
+      // })
+      
+      // Define the expected response type
+      // type LoginResponse = { token: string }
+
+      // Cast response.data to the expected type
+      // const data = response.data as LoginResponse
+
+      // sessionStorage.setItem('authToken', data.token)
+         
+      // toast.success("Account created successfully!")
+      // router.push("/dashboard")
+    } catch (error: any) {
+      console.error("Signup error:", error)
+      
+      if (error.response) {
+        // Backend validation errors
+        if (error.response.data?.errors) {
+          const backendErrors = error.response.data.errors
+          const newErrors: typeof errors = {}
+          
+          if (backendErrors.name) newErrors.name = backendErrors.name
+          if (backendErrors.email) newErrors.email = backendErrors.email
+          if (backendErrors.password) newErrors.password = backendErrors.password
+          
+          setErrors(newErrors)
+        } else if (error.response.data?.message) {
+          toast.error(error.response.data.message)
+        } else {
+          toast.error("Signup failed. Please try again.")
+        }
+      } else {
+        toast.error("Network error. Please check your connection.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -81,21 +121,21 @@ export function SignupForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-300">
+          <label htmlFor="name" className="block text-sm font-medium text-gray-300">
             Full Name
           </label>
           <Input
-            id="fullName"
-            name="fullName"
+            id="name"
+            name="name"
             type="text"
-            value={formData.fullName}
+            value={formData.name}
             onChange={handleChange}
             placeholder="John Doe"
             className={`bg-[#0f172a] border-gray-700 focus:border-[#00e0ff] focus:ring-1 focus:ring-[#00e0ff]/30 text-white ${
-              errors.fullName ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : ""
+              errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-500/30" : ""
             }`}
           />
-          {errors.fullName && <p className="text-red-400 text-xs mt-1">{errors.fullName}</p>}
+          {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
         </div>
 
         <div className="space-y-2">
@@ -167,6 +207,8 @@ export function SignupForm() {
         <div className="flex items-start space-x-2 pt-2">
           <Checkbox
             id="terms"
+            checked={termsAccepted}
+            onCheckedChange={(checked) => setTermsAccepted(!!checked)}
             className="border-gray-600 data-[state=checked]:bg-[#00e0ff] data-[state=checked]:border-[#00e0ff] mt-0.5"
           />
           <label htmlFor="terms" className="text-sm text-gray-300 leading-snug">
@@ -180,6 +222,7 @@ export function SignupForm() {
             </Link>
           </label>
         </div>
+        {errors.terms && <p className="text-red-400 text-xs -mt-2">{errors.terms}</p>}
 
         <Button
           type="submit"
@@ -209,11 +252,19 @@ export function SignupForm() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" className="bg-[#0f172a] border-gray-700 hover:bg-gray-800">
+        <Button 
+          variant="outline" 
+          className="bg-[#0f172a] border-gray-700 hover:bg-gray-800"
+          disabled={isLoading}
+        >
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>
-        <Button variant="outline" className="bg-[#0f172a] border-gray-700 hover:bg-gray-800">
+        <Button 
+          variant="outline" 
+          className="bg-[#0f172a] border-gray-700 hover:bg-gray-800"
+          disabled={isLoading}
+        >
           <FacebookIcon className="mr-2 h-4 w-4 text-blue-500" />
           Facebook
         </Button>

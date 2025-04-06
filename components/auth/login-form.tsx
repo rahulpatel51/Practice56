@@ -6,24 +6,94 @@ import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import { toast } from "sonner" // Assuming you're using Sonner for toast notifications
 
 export function LoginForm() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [id]: value
+    }))
+    // Clear error when user types
+    if (errors[id as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [id]: undefined }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrors({})
 
-    // Simulate API call
-    setTimeout(() => {
-      router.push("/dashboard")
+    // Basic validation
+    if (!formData.email) {
+      setErrors(prev => ({ ...prev, email: "Email is required" }))
       setIsLoading(false)
-    }, 1500)
+      return
+    }
+
+    if (!formData.password) {
+      setErrors(prev => ({ ...prev, password: "Password is required" }))
+      setIsLoading(false)
+      return
+    }
+
+    // try {
+    //   const response = await authService.login({
+    //     email: formData.email,
+    //     password: formData.password
+    //   })
+
+      // // Define the expected response type
+      // type LoginResponse = { token: string }
+
+      // // Cast response.data to the expected type
+      // const data = response.data as LoginResponse
+
+      // // Store token based on remember me choice
+      // if (rememberMe) {
+      //   localStorage.setItem('authToken', data.token)
+      // } else {
+      //   sessionStorage.setItem('authToken', data.token)
+      // }
+      
+    //   toast.success("Login successful!")
+    //   router.push("/dashboard")
+    // } catch (error: any) {
+    //   console.error("Login error:", error)
+      
+    //   if (error.response) {
+    //     // Backend validation errors
+    //     if (error.response.data?.errors) {
+    //       const backendErrors = error.response.data.errors
+    //       const newErrors: typeof errors = {}
+          
+    //       if (backendErrors.email) newErrors.email = backendErrors.email
+    //       if (backendErrors.password) newErrors.password = backendErrors.password
+          
+    //       setErrors(newErrors)
+    //     } else if (error.response.data?.message) {
+    //       setErrors({ general: error.response.data.message })
+    //     } else {
+    //       setErrors({ general: "Login failed. Please try again." })
+    //     }
+    //   } else {
+    //     setErrors({ general: "Network error. Please check your connection." })
+    //   }
+    // } finally {
+    //   setIsLoading(false)
+    // }
   }
 
   return (
@@ -36,6 +106,13 @@ export function LoginForm() {
         <p className="text-gray-400">Sign in to access your dashboard</p>
       </div>
 
+      {/* Error Message */}
+      {errors.general && (
+        <div className="mb-4 p-3 bg-red-900/50 border border-red-700/50 rounded-lg text-red-300 text-sm">
+          {errors.general}
+        </div>
+      )}
+
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email Field */}
@@ -47,10 +124,10 @@ export function LoginForm() {
             <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               placeholder="your@email.com"
-              className="w-full bg-gray-900/50 border-gray-700 focus:border-[#00e0ff] focus:ring-1 focus:ring-[#00e0ff]/50 text-white transition-all duration-300 pl-10"
+              className={`w-full bg-gray-900/50 ${errors.email ? 'border-red-500' : 'border-gray-700'} focus:border-[#00e0ff] focus:ring-1 focus:ring-[#00e0ff]/50 text-white transition-all duration-300 pl-10`}
               required
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -60,6 +137,7 @@ export function LoginForm() {
               </svg>
             </div>
           </div>
+          {errors.email && <p className="text-red-400 text-xs">{errors.email}</p>}
         </div>
 
         {/* Password Field */}
@@ -76,11 +154,12 @@ export function LoginForm() {
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
               placeholder="••••••••"
-              className="w-full bg-gray-900/50 border-gray-700 focus:border-[#00e0ff] focus:ring-1 focus:ring-[#00e0ff]/50 text-white transition-all duration-300 pl-10"
+              className={`w-full bg-gray-900/50 ${errors.password ? 'border-red-500' : 'border-gray-700'} focus:border-[#00e0ff] focus:ring-1 focus:ring-[#00e0ff]/50 text-white transition-all duration-300 pl-10`}
               required
+              minLength={6}
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -97,6 +176,7 @@ export function LoginForm() {
               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
+          {errors.password && <p className="text-red-400 text-xs">{errors.password}</p>}
         </div>
 
         {/* Remember Me */}
@@ -147,6 +227,7 @@ export function LoginForm() {
         <Button
           variant="outline"
           className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/70 hover:border-gray-600 transition-all"
+          disabled={isLoading}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -159,6 +240,7 @@ export function LoginForm() {
         <Button
           variant="outline"
           className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/70 hover:border-gray-600 transition-all"
+          disabled={isLoading}
         >
           <svg className="mr-2 h-4 w-4 text-[#1877F2]" viewBox="0 0 24 24">
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />

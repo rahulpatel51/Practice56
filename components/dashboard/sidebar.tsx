@@ -101,6 +101,12 @@ export function Sidebar() {
               isActive={isActive("/dashboard/orders")}
               badge={12}
             />
+             <NavItem
+              href="/dashboard/category"
+              icon={<ShoppingCart size={16} />}
+              label="Category"
+              isActive={isActive("/dashboard/category")}
+            />
             <NavItem
               href="/dashboard/products"
               icon={<Box size={16} />}
